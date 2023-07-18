@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 //check availability
-Route::get('/tables/availability', [TableController::class, 'checkAvailability'])->name('availability.check');
+Route::get('/tables/{id}/availability', [TableController::class, 'checkAvailability'])->name('availability.check');
 
 //reserve table
 Route::post('/reserve_table', [ReservationController::class, 'reserveTable'])->name('table.reserve');

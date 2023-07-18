@@ -22,6 +22,8 @@ return new class extends Migration
 
             $table->decimal('amount_to_pay', 8, 2);
 
+            $table->integer('quantity');
+
             $table->timestamps();
         });
     }

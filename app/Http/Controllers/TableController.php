@@ -8,26 +8,41 @@ use Illuminate\Http\Request;
 class TableController extends Controller
 {
     // check availability function
-    public function checkAvailability(Request $request) {
+    public function checkAvailability($id, Request $request) {
 
         $date = $request->input('date');
         $guests = $request->input('guests');
+        $table = Table::find($id);
+        $table_available = false;
 
         // dd($guests);
+        if($table->capacity < $guests) {
 
-        $availableTables = Table::where('capacity', '>=', $guests)
-            ->whereDoesntHave('reservations', function ($query) use ($date) {
-                $query->where('from_time', '<=', $date.' 23:59:59')
-                    ->where('to_time', '>=', $date.' 00:00:00');
-            })
-            ->get();
+            return response()->json(['error' => 'Table capacity is less than guests'], 400);
 
-        if($availableTables) {
+        }
+        $availablity = $table->whereDoesntHave('reservations', function ($query) use ($date) {
+                $query->where('from_time', '<=', $date)
+                    ->where('to_time', '>=', $date);
+            })->get();
 
-            return response()->json($availableTables);
+        foreach($availablity as $av) {
+            if($av->id == $id) {
+                $table_available = true;
+            }
         }
 
-        return response()->json(['error' => 'No table available'], 404);
+        if($table_available == true) {
+
+            return response()->json(['success' => 'Table is available'], 200);
+
+        } else {
+
+
+            return response()->json(['error' => 'Table is not available'], 400);
+
+        }
+
 
 
     }

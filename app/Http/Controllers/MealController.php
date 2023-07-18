@@ -9,7 +9,7 @@ class MealController extends Controller
 {
     public function index() {
 
-        $meals = Meal::all();
+        $meals = Meal::where('quantity_available', '>', 0)->get();
 
         return response()->json($meals);
 

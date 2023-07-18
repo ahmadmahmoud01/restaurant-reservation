@@ -67,13 +67,13 @@ class OrderController extends Controller
                 return response()->json(['error' => 'Insufficient quantity of meal available'], 400);
             }
 
-            $amountToPay = $meal->price * $quantity;
+            $amountToPay = ($meal->price - ($meal->price * $meal->discount / 100)) * $quantity ;
             $total += $amountToPay;
 
             $orderDetail = new OrderDetail;
             $orderDetail->meal_id = $mealId;
             $orderDetail->order_id = $order->id;
-            // $orderDetail->quantity = $quantity;
+            $orderDetail->quantity = $quantity;
             $orderDetail->amount_to_pay = $amountToPay;
 
 
@@ -82,14 +82,6 @@ class OrderController extends Controller
             // Update meal quantity
             $meal->quantity_available -= $quantity;
             $meal->save();
-        }
-
-         // Apply discounts
-        $discount = $reservation->customer->discount;
-
-        if ($discount > 0) {
-            $discountAmount = $total * ($discount / 100);
-            $total -= $discountAmount;
         }
 
         $order->update(['total' => $total]);
@@ -116,6 +108,7 @@ class OrderController extends Controller
             'waiter_id' => $order->waiter_id,
             'total' => $order->total,
             'paid' => $order->paid,
+            'remain' => $order->total - $order->paid,
             'date' => $order->date,
             'order_details' => []
         ];
@@ -126,7 +119,6 @@ class OrderController extends Controller
             $invoice['order_details'][] = [
                 'meal_id' => $meal->id,
                 'description' => $meal->description,
-                'price' => $meal->price,
                 'quantity' => $orderDetail->quantity,
                 'amount_to_pay' => $orderDetail->amount_to_pay
             ];
